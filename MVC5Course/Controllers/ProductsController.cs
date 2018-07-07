@@ -7,6 +7,7 @@ using System.Net;
 using System.Web;
 using System.Web.Mvc;
 using MVC5Course.Models;
+using Omu.ValueInjecter;
 
 namespace MVC5Course.Controllers
 {
@@ -73,14 +74,29 @@ namespace MVC5Course.Controllers
             if (!ModelState.IsValid)
             {
                 return View(data);
-                
+
             }
 
             var product = db.Product.Find(id);
 
-            product.ProductName = data.ProductName;
-            product.Price = data.Price;
-            product.Stock = data.Stock;
+            product.InjectFrom(data);
+            //product.ProductName = data.ProductName;
+            //product.Price = data.Price;
+            //product.Stock = data.Stock;
+            db.SaveChanges();
+
+            return RedirectToAction("Index2");
+        }
+
+        public ActionResult DeleteOne(int id)
+        {
+
+            var product = db.Product.Find(id);
+
+            if (product == null)
+                return HttpNotFound();
+
+            db.Product.Remove(product);
             db.SaveChanges();
 
             return RedirectToAction("Index2");
