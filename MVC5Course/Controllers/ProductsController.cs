@@ -33,6 +33,59 @@ namespace MVC5Course.Controllers
             return View(data);
         }
 
+        public ActionResult AddNewProdeut()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public ActionResult AddNewProdeut(ProductViewModel data)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View();
+            }
+
+            var product = new Product()
+            {
+                ProductName = data.ProductName,
+                Active = true,
+                Price = data.Price,
+                Stock = data.Stock
+            };
+
+            db.Product.Add(product);
+            db.SaveChanges();
+
+            return RedirectToAction("Index2");
+        }
+
+        public ActionResult EditOne(int id)
+        {
+            var product = db.Product.Find(id);
+
+            return View(product);
+        }
+
+        [HttpPost]
+        public ActionResult EditOne(int id, ProductViewModel data)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(data);
+                
+            }
+
+            var product = db.Product.Find(id);
+
+            product.ProductName = data.ProductName;
+            product.Price = data.Price;
+            product.Stock = data.Stock;
+            db.SaveChanges();
+
+            return RedirectToAction("Index2");
+        }
+
         // GET: Products/Details/5
         public ActionResult Details(int? id)
         {
