@@ -22,14 +22,14 @@ namespace MVC5Course.Controllers
         }
         public ActionResult Index2()
         {
-            var data = db.Product.Where(x=>x.Active==true)
+            var data = db.Product.Where(x => x.Active == true)
                 .OrderByDescending(x => x.ProductId).Take(10).Select(x => new ProductViewModel
-            {
-                ProductName=x.ProductName,
-                ProductId=x.ProductId,
-                Price=x.Price,
-                Stock=x.Stock
-            });
+                {
+                    ProductName = x.ProductName,
+                    ProductId = x.ProductId,
+                    Price = x.Price,
+                    Stock = x.Stock
+                });
             return View(data);
         }
 
