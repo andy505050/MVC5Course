@@ -12,20 +12,25 @@ namespace MVC5Course.Controllers
 {
     public class ClientsController : Controller
     {
-        private FabricsEntities db = new FabricsEntities();
+        //private FabricsEntities db = new FabricsEntities();
+        ClientRepository repo;
+        OccupationRepository occup;
 
+        public ClientsController()
+        {
+            repo = RepositoryHelper.GetClientRepository();
+            occup = RepositoryHelper.GetOccupationRepository(repo.UnitOfWork);
+        }
         // GET: Clients
         public ActionResult Index()
         {
-            var client = db.Client.Include(c => c.Occupation);
+            var client = repo.All();
             return View(client.Take(10).OrderByDescending(x => x.ClientId).ToList());
         }
 
         public ActionResult Search(string Keyword)
         {
-            var data = db.Client.OrderByDescending(x => x.ClientId).AsQueryable();
-            if (!string.IsNullOrEmpty(Keyword))
-                data = data.Where(x => x.FirstName.Contains(Keyword));
+            var data = repo.Search(Keyword);
 
             return View("Index", data.Take(10));
         }
@@ -37,7 +42,7 @@ namespace MVC5Course.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Client client = db.Client.Find(id);
+            Client client = repo.Find(id.Value);
             if (client == null)
             {
                 return HttpNotFound();
@@ -48,7 +53,8 @@ namespace MVC5Course.Controllers
         // GET: Clients/Create
         public ActionResult Create()
         {
-            ViewBag.OccupationId = new SelectList(db.Occupation, "OccupationId", "OccupationName");
+            
+            ViewBag.OccupationId = new SelectList(occup.All(), "OccupationId", "OccupationName");
             return View();
         }
 
@@ -61,12 +67,12 @@ namespace MVC5Course.Controllers
         {
             if (ModelState.IsValid)
             {
-                db.Client.Add(client);
-                db.SaveChanges();
+                repo.Add(client);
+                repo.UnitOfWork.Commit();
                 return RedirectToAction("Index");
             }
 
-            ViewBag.OccupationId = new SelectList(db.Occupation, "OccupationId", "OccupationName", client.OccupationId);
+            ViewBag.OccupationId = new SelectList(occup.All(), "OccupationId", "OccupationName", client.OccupationId);
             return View(client);
         }
 
@@ -77,12 +83,12 @@ namespace MVC5Course.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Client client = db.Client.Find(id);
+            Client client = repo.Find(id.Value);
             if (client == null)
             {
                 return HttpNotFound();
             }
-            ViewBag.OccupationId = new SelectList(db.Occupation, "OccupationId", "OccupationName", client.OccupationId);
+            ViewBag.OccupationId = new SelectList(occup.All(), "OccupationId", "OccupationName", client.OccupationId);
             return View(client);
         }
 
@@ -95,11 +101,12 @@ namespace MVC5Course.Controllers
         {
             if (ModelState.IsValid)
             {
+                var db = repo.UnitOfWork.Context;
                 db.Entry(client).State = EntityState.Modified;
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
-            ViewBag.OccupationId = new SelectList(db.Occupation, "OccupationId", "OccupationName", client.OccupationId);
+            ViewBag.OccupationId = new SelectList(occup.All(), "OccupationId", "OccupationName", client.OccupationId);
             return View(client);
         }
 
@@ -110,7 +117,7 @@ namespace MVC5Course.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Client client = db.Client.Find(id);
+            Client client = repo.Find(id.Value);
             if (client == null)
             {
                 return HttpNotFound();
@@ -123,9 +130,9 @@ namespace MVC5Course.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            Client client = db.Client.Find(id);
-            db.Client.Remove(client);
-            db.SaveChanges();
+            Client client = repo.Find(id);
+            repo.Delete(client);
+            repo.UnitOfWork.Commit();
             return RedirectToAction("Index");
         }
 
@@ -133,7 +140,7 @@ namespace MVC5Course.Controllers
         {
             if (disposing)
             {
-                db.Dispose();
+                repo.UnitOfWork.Context.Dispose();
             }
             base.Dispose(disposing);
         }
