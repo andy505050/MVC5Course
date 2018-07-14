@@ -55,7 +55,7 @@ namespace MVC5Course.Controllers
         // GET: Clients/Create
         public ActionResult Create()
         {
-            
+
             ViewBag.OccupationId = new SelectList(occup.All(), "OccupationId", "OccupationName");
             return View();
         }
@@ -102,15 +102,16 @@ namespace MVC5Course.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Route("E/{id}")]
-        public ActionResult Edit([Bind(Include = "ClientId,FirstName,MiddleName,LastName,Gender,DateOfBirth,CreditRating,XCode,OccupationId,TelephoneNumber,Street1,Street2,City,ZipCode,Longitude,Latitude,Notes,IDnumber")] Client client)
+        public ActionResult Edit(int id, FormCollection form)
         {
-            if (ModelState.IsValid)
+
+            var client = repo.Find(id);
+            if(TryUpdateModel(client,"",null,new string[] { "FirstName" }))
             {
-                var db = repo.UnitOfWork.Context;
-                db.Entry(client).State = EntityState.Modified;
-                db.SaveChanges();
+                repo.UnitOfWork.Commit();
                 return RedirectToAction("Index");
             }
+  
             ViewBag.OccupationId = new SelectList(occup.All(), "OccupationId", "OccupationName", client.OccupationId);
             return View(client);
         }
@@ -147,13 +148,13 @@ namespace MVC5Course.Controllers
         [Route("BacthUpdate")]
         public ActionResult BatchUpdate(List<ClientsBatchUpdateVM> data)
         {
-            
+
             if (ModelState.IsValid)
             {
 
                 foreach (var item in data)
                 {
-                    var client=repo.Find(item.ClientId);
+                    var client = repo.Find(item.ClientId);
                     client.FirstName = item.FirstName;
                     client.MiddleName = item.MiddleName;
                     client.LastName = item.LastName;
