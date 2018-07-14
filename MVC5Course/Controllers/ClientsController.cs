@@ -143,6 +143,30 @@ namespace MVC5Course.Controllers
             return RedirectToAction("Index");
         }
 
+        [HttpPost]
+        [Route("BacthUpdate")]
+        public ActionResult BatchUpdate(List<ClientsBatchUpdateVM> data)
+        {
+            
+            if (ModelState.IsValid)
+            {
+
+                foreach (var item in data)
+                {
+                    var client=repo.Find(item.ClientId);
+                    client.FirstName = item.FirstName;
+                    client.MiddleName = item.MiddleName;
+                    client.LastName = item.LastName;
+                }
+                repo.UnitOfWork.Commit();
+
+                return RedirectToAction("Index");
+            }
+
+            ViewData.Model = repo.All().Take(10);
+            return View("Index");
+        }
+
         protected override void Dispose(bool disposing)
         {
             if (disposing)
