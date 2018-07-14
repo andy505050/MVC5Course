@@ -6,7 +6,7 @@ namespace MVC5Course.Models
     using System.ComponentModel.DataAnnotations;
 
     [MetadataType(typeof(ClientMetaData))]
-    public partial class Client : IValidatableObject
+    public partial class Client : IValidatableObject, IClientBatchUpdate
     {
 
         partial void init()

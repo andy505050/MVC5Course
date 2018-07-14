@@ -20,6 +20,8 @@ namespace MVC5Course.Controllers
             return View();
         }
 
+        [LocalOnly]
+        [產生ViewBag下有一個Message可以用]
         public ActionResult Contact()
         {
             ViewBag.Message = "Your contact page.";
