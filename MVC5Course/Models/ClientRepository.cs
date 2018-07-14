@@ -6,6 +6,14 @@ namespace MVC5Course.Models
 {
     public class ClientRepository : EFRepository<Client>, IClientRepository
     {
+
+        public OrderRepository orderRepo { get; set; }
+        public ClientRepository()
+        {
+            this.orderRepo = RepositoryHelper.GetOrderRepository();
+        }
+
+
         public override IQueryable<Client> All()
         {
             return base.All().Where(x => !x.isDelete.Equals("Y"));
